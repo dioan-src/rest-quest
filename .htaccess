@@ -1,0 +1,11 @@
+# Enable mod_rewrite
+RewriteEngine On
+
+# Redirect all requests starting with /api/ to the backend
+RewriteCond %{REQUEST_URI} ^/api/
+RewriteRule ^api/(.*)$ api/index.php [L]
+
+# Redirect all other requests to the frontend's index.html
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]
