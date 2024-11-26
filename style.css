@@ -1,0 +1,24 @@
+/* Add custom styles for the user cards */
+.user-card {
+    background-color: #f5f5f5;
+    padding: 20px;
+    margin: 10px 0;
+    border-radius: 8px; /* Rounded corners */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Border shadow */
+    border: 1px solid #ddd;
+}
+
+/* Space between paragraphs in the user card */
+.user-card p {
+    margin: 0 0 10px;
+}
+
+/* Make the labels bold */
+.user-card p strong {
+    color: #333;
+}
+
+/* Hover effect for better interactivity */
+.user-card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
