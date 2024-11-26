@@ -8,6 +8,8 @@ class Router {
             'POST' => 'store',
             'POST|managers' => 'storeManagers',
             'POST|employees' => 'storeEmployees',
+            'POST|login' => 'login',
+            'POST|logout' => 'logout',
             'GET' => 'show',
             'GET|managers' => 'showManagers',
             'GET|employees' => 'showEmployees',

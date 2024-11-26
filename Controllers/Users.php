@@ -2,6 +2,9 @@
 require_once __DIR__ . '/../utils/Response.php';
 require_once __DIR__ . '/../Models/User.php';
 require_once __DIR__ . '/../Models/Request.php';
+require_once __DIR__ . '/../Models/Login.php';
+require_once __DIR__ . '/../Models/LoginToken.php';
+require_once __DIR__ . '/../utils/TimeUtils.php';
 
 class Users
 {
@@ -72,5 +75,45 @@ class Users
         } catch (Exception $e){
             Response::sendResponse([], "Something went Wrong", false, 500);
         }
+    }
+
+    public static function login(array $data)
+    {
+        $username = $data['username'];
+        $password = $data['password'];
+
+        $userToLogin = (new User())->findByUsername($username);
+
+        if (empty($userToLogin)) Response::sendResponse([], "Account doesn't exist", false, 400);
+
+        if ($userToLogin->password !== $password) Response::sendResponse([], "Credentials don't match", false, 400);
+        
+        //log loggin
+        $loginId = (new Login())->create( ["user_id" => $userToLogin->id, "timestamp" => TimeUtils::getCurrentTimestamp()] );
+
+        //create login token
+        $loginTokenRepo = new LoginToken();
+        //check if user has logged in, in the last hour
+        $logintoken = $loginTokenRepo->getActiveLoginToken($userToLogin->id);
+        //if not - create one
+        if (empty($logintoken)) {
+            $loginTokenId = $loginTokenRepo->create( ["token" => substr(uniqid(), 0, 10), "user_id" => $userToLogin->id, "timestamp" => TimeUtils::getCurrentTimestamp()] );
+            //fetch it
+            $logintoken = $loginTokenRepo->find($loginTokenId);
+        }
+        
+        Response::sendResponse([
+            "username" => $userToLogin->username,
+            "email" => $userToLogin->email,
+            "role_id" => $userToLogin->role_id,
+            "role" => ($userToLogin->role_id === 1) ? 'Manager' : 'Employer',
+            "login_token" => $logintoken->token,
+        ], "Login successful", true, 200);
+    }
+
+    public static function logout(array $data)
+    {
+        (new LoginToken())->invalidateToken($data['user_id']);
+        Response::sendResponse([], "User logged out successfully", true, 200);
     }
 }

@@ -21,7 +21,7 @@ abstract class Model
             }
         }
         $stmt->execute();
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $stmt->fetchAll(PDO::FETCH_OBJ);
     }
 
     public function findAll()
@@ -34,7 +34,8 @@ abstract class Model
     {
         $query = "SELECT * FROM {$this->tableName} WHERE id = :id";
         $params = ['id' => $id];
-        return $this->executeQuery($query, $params);
+        $results = $this->executeQuery($query, $params);
+        return ($results) ? current($results) : null;
     }
 
     public function create(array $data)
