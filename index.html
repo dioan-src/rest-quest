@@ -101,37 +101,42 @@
         </div>
 
         <!-- Edit User Form (Initially hidden) -->
-        <div id="edit-user-form" class="is-hidden">
-            <h2 class="subtitle">Edit User</h2>
-            <input type="hidden" id="edit-user-id">
-            
-            <div class="field">
-                <label class="label">Username</label>
-                <div class="control">
-                    <!-- Removed readonly to allow editing -->
-                    <input class="input" type="text" id="edit-username" placeholder="Username">
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="label">Email</label>
-                <div class="control">
-                    <!-- Removed readonly to allow editing -->
-                    <input class="input" type="email" id="edit-email" placeholder="Email">
-                </div>
-            </div>
-            
-            <div class="field">
-                <label class="label">Password</label>
-                <div class="control">
-                    <input class="input" type="password" id="edit-password" placeholder="New password (leave empty to keep current)">
-                </div>
-            </div>
-            
-            <div class="field">
-                <div class="control">
-                    <button class="button is-primary" onclick="updateUser()">Update</button>
-                    <button class="button is-light" onclick="cancelEdit()">Cancel</button>
+        <div id="edit-user-form" class="modal">
+            <div class="modal-background" onclick="cancelEdit()"></div>
+            <div class="modal-content">
+                <div class="box">
+                    <h3 class="title">Edit User</h3>
+                    <form id="edit-user-form-content" onsubmit="updateUser(event)">
+                        <input type="hidden" id="edit-user-id">
+                        
+                        <div class="field">
+                            <label class="label">Username</label>
+                            <div class="control">
+                                <input class="input" type="text" id="edit-username" placeholder="Username">
+                            </div>
+                        </div>
+        
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control">
+                                <input class="input" type="email" id="edit-email" placeholder="Email">
+                            </div>
+                        </div>
+        
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control">
+                                <input class="input" type="password" id="edit-password" placeholder="New password (leave empty to keep current)">
+                            </div>
+                        </div>
+        
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">Update</button>
+                                <button type="button" class="button is-light" onclick="cancelEdit()">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>

@@ -19,7 +19,7 @@ function showLoginScreen() {
 
 // Function to show the users list screen
 function showUserList() {
-    document.getElementById('page-title').innerText = 'Users List';
+    document.getElementById('page-title').innerText = 'Employers List';
     document.getElementById('login-form').classList.add('is-hidden');
     document.getElementById('users-list').classList.remove('is-hidden');
     fetchData();
@@ -175,7 +175,6 @@ function submitCreateUserForm(event) {
 
 
 function editUser(userId) {
-
     // Fetch the user data based on the userId
     fetch(`http://localhost:8020/api/users/${userId}`)
         .then(response => response.json())
@@ -186,11 +185,10 @@ function editUser(userId) {
                 // Populate the form with the current username and email
                 document.getElementById('edit-username').value = user.username;
                 document.getElementById('edit-email').value = user.email;
-                document.getElementById('edit-user-id').value = userId
+                document.getElementById('edit-user-id').value = userId;
 
-                // Show the edit form and hide the users list
-                document.getElementById('edit-user-form').classList.remove('is-hidden');
-                document.getElementById('users-list').classList.add('is-hidden');
+                // Show the edit form as a modal
+                document.getElementById('edit-user-form').classList.add('is-active');
             } else {
                 alert('Error fetching user details: ' + data.message);
             }
@@ -202,37 +200,34 @@ function editUser(userId) {
 }
 
 
-function updateUser() {
-    const userId = document.getElementById('edit-user-id').value; // Use the hidden user ID
+function updateUser(event) {
+    event.preventDefault(); // Prevent form submission
+
+    const userId = document.getElementById('edit-user-id').value;
     const username = document.getElementById('edit-username').value;
     const email = document.getElementById('edit-email').value;
     const password = document.getElementById('edit-password').value;
 
     // Prepare the data for the PUT request
-    const updatedUser = {
-        username: username,
-        email: email
-    };
+    const updatedUser = { username, email };
 
-    // Only add password if it's not empty
     if (password) {
         updatedUser.password = password;
     }
-    
-    // Send the PUT request to update the user
+
     fetch(`http://localhost:8020/api/users/${userId}`, {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('login_token')}`
+            'Authorization': `Bearer ${localStorage.getItem('login_token')}`,
         },
-        body: JSON.stringify(updatedUser)
+        body: JSON.stringify(updatedUser),
     })
     .then(response => response.json())
     .then(data => {
         if (data.success) {
             alert('User updated successfully');
-            showUserList();  // Go back to the users list after successful update
+            showUserList(); // Refresh the users list
         } else {
             alert('Error updating user: ' + data.message);
         }
@@ -245,8 +240,7 @@ function updateUser() {
 
 // Function to cancel editing and go back to the user list
 function cancelEdit() {
-    document.getElementById('edit-user-form').classList.add('is-hidden');
-    document.getElementById('users-list').classList.remove('is-hidden');
+    document.getElementById('edit-user-form').classList.remove('is-active');
 }
 
 
