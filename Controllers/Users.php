@@ -109,6 +109,7 @@ class Users
         }
         
         Response::sendResponse([
+            "user_id" => $userToLogin->id,
             "username" => $userToLogin->username,
             "email" => $userToLogin->email,
             "role_id" => $userToLogin->role_id,

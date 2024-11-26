@@ -21,6 +21,7 @@ class Router {
         'Requests' => [
             'POST' => 'store',
             'GET' => 'show',
+            'GET|pending' => 'showPending',
             'PUT|{id}' => 'edit',
             'DELETE|{id}' => 'destroy',
         ]

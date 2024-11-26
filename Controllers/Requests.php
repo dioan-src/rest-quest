@@ -35,4 +35,10 @@ class Requests
         (new Request())->delete($id);
         Response::sendResponse([], "Request deleted successfully", true, 200);
     }
+
+    public static function showPending()
+    {
+        $requests = (new Request())->findByStatus(self::PENDING_STATUS);
+        Response::sendSuccess((array) $requests, "");
+    }
 }

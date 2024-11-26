@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (localStorage.getItem('login_token')) {
         // If logged in, show the users list and update the navbar with the user role
         showUserList();
+        showRequestsList();
         updateNavbar();
     } else {
         // If not logged in, show the login screen
@@ -12,16 +13,29 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Function to show the login screen
 function showLoginScreen() {
-    document.getElementById('page-title').innerText = 'Login';
+    
     document.getElementById('login-form').classList.remove('is-hidden');
     document.getElementById('users-list').classList.add('is-hidden');
+    document.getElementById('requests-list').classList.add('is-hidden');
+
+    // Hide user info and logout button
+    document.getElementById('user-info').style.display = 'none';
+    document.getElementById('logout-btn').style.display = 'none';
 }
 
 // Function to show the users list screen
 function showUserList() {
-    document.getElementById('page-title').innerText = 'Employers List';
     document.getElementById('login-form').classList.add('is-hidden');
     document.getElementById('users-list').classList.remove('is-hidden');
+
+    const role = localStorage.getItem('user_role');
+    const username = localStorage.getItem('username');
+
+    document.getElementById('user-info').style.display = 'flex';
+    document.getElementById('user-role').innerText = role ? role : 'Unknown Role';
+    document.getElementById('user-username').innerText = username ? username : 'Unknown User';
+    document.getElementById('logout-btn').style.display = 'inline-block';
+
     fetchData();
 }
 
@@ -55,7 +69,11 @@ function login() {
             // On successful login, save login token and role to localStorage and show the users list
             localStorage.setItem('login_token', data.content.login_token);
             localStorage.setItem('user_role', data.content.role); // Save the role (Manager or Employer)
+            localStorage.setItem('username', data.content.username); // Save the username
+            localStorage.setItem('user_id', data.content.user_id); // Save user_id
+            
             showUserList();
+            showRequestsList();
             updateNavbar();;
         } else {
             alert('Login failed: ' + data.message);
@@ -70,11 +88,23 @@ function login() {
 // Function to update the navbar with the user's role after login
 function updateNavbar() {
     const role = localStorage.getItem('user_role'); // Retrieve the user's role from localStorage
-    const navbarItem = document.querySelector('.navbar-item'); // Select the navbar item to display the role
-    
-    if (role) {
-        // Update the navbar item to show the role
-        navbarItem.innerHTML = `<strong>My restQuest - ${role}</strong>`;
+    const username = localStorage.getItem('username'); // Retrieve the username from localStorage
+
+    const userInfoElement = document.getElementById('user-info'); // Element to show role and username
+    const logoutButton = document.getElementById('logout-btn'); // Logout button element
+
+    if (role && username) {
+        // Populate the role and username
+        document.getElementById('user-role').innerText = `${role}`;
+        document.getElementById('user-username').innerText = `${username}`;
+
+        // Display the user info and logout button
+        userInfoElement.style.display = 'flex';
+        if (logoutButton) logoutButton.style.display = 'inline-block';
+    } else {
+        // Hide the user info and logout button if no role or username
+        userInfoElement.style.display = 'none';
+        if (logoutButton) logoutButton.style.display = 'none';
     }
 }
 
@@ -270,4 +300,166 @@ function deleteUser(userId) {
             alert('Error deleting user. Please try again later.');
         });
     }
+}
+
+function logout() {
+    const userId = localStorage.getItem('user_id'); // Retrieve the user_id from localStorage
+
+    if (!userId) {
+        alert("Cant logout right now. Please log in again.");
+        showLoginScreen();
+        return;
+    }
+
+    fetch('http://localhost:8020/api/users/logout', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('login_token')}`
+        },
+        body: JSON.stringify({ user_id: parseInt(userId) }) // Send the user_id
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert(data.message); // Display the success message
+            // Clear all localStorage data
+            localStorage.removeItem('login_token');
+            localStorage.removeItem('user_role');
+            localStorage.removeItem('username');
+            localStorage.removeItem('user_id');
+            // Redirect to login screen
+            showLoginScreen();
+        } else {
+            alert('Logout failed: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error during logout:', error);
+        alert('Error logging out. Please try again later.');
+    });
+}
+
+// Function to fetch and display pending requests
+function fetchPendingRequests() {
+    fetch('http://localhost:8020/api/requests/pending', {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('login_token')}`
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const container = document.getElementById('pending-requests-container');
+
+            // Clear existing content
+            container.innerHTML = '';
+
+            if (data.content.length === 0) {
+                container.innerHTML = '<p>No pending requests found.</p>';
+                return;
+            }
+
+            // Populate the list with pending requests
+            data.content.forEach(request => {
+                const requestDiv = document.createElement('div');
+                requestDiv.classList.add('request-card'); // Add a class for styling
+                requestDiv.innerHTML = `
+                    <p><strong>Start Date:</strong> ${request.start_date}</p>
+                    <p><strong>End Date:</strong> ${request.end_date}</p>
+                    <p><strong>Reason:</strong> ${request.reason}</p>
+                    <p><strong>Submitted At:</strong> ${request.submitted_at}</p>
+                    <div class="buttons">
+                        <button class="button is-success" onclick="approveRequest(${request.id})">Approve</button>
+                        <button class="button is-danger" onclick="rejectRequest(${request.id})">Reject</button>
+                    </div>
+                `;
+                container.appendChild(requestDiv);
+            });
+        } else {
+            console.error('Error fetching pending requests:', data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error during fetch:', error);
+    });
+}
+
+function showRequestsList() {
+    // Ensure the requests list is visible
+    const requestsListElement = document.getElementById('requests-list');
+    requestsListElement.classList.remove('is-hidden');
+
+    // Fetch and display pending requests
+    fetchPendingRequests();
+}
+
+function approveRequest(requestId) {
+    const userId = localStorage.getItem('user_id'); // Get the user ID from localStorage
+
+    if (!userId) {
+        alert("You must be logged in to approve requests.");
+        return;
+    }
+
+    // Send the PUT request to approve the request
+    fetch(`http://localhost:8020/api/requests/${requestId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('login_token')}`
+        },
+        body: JSON.stringify({
+            status_id: 2  // Status 2 means approved
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Request approved successfully!');
+            fetchPendingRequests();  // Refresh the requests list
+        } else {
+            alert('Error approving request: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error approving request:', error);
+        alert('Error approving request. Please try again later.');
+    });
+}
+
+function rejectRequest(requestId) {
+    const userId = localStorage.getItem('user_id'); // Get the user ID from localStorage
+
+    if (!userId) {
+        alert("You must be logged in to reject requests.");
+        return;
+    }
+
+    // Send the PUT request to reject the request
+    fetch(`http://localhost:8020/api/requests/${requestId}`, {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('login_token')}`
+        },
+        body: JSON.stringify({
+            status_id: 3  // Status 3 means rejected
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Request rejected successfully!');
+            fetchPendingRequests();  // Refresh the requests list
+        } else {
+            alert('Error rejecting request: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error rejecting request:', error);
+        alert('Error rejecting request. Please try again later.');
+    });
 }

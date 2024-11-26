@@ -16,4 +16,11 @@ class Request extends Model
         $params = ['user_id' => $id];
         return $this->executeQuery($query, $params);
     }
+
+    public function findByStatus($statusId)
+    {
+        $query = "SELECT * FROM {$this->tableName} WHERE status_id = :status_id";
+        $params = ['status_id' => $statusId];
+        return $this->executeQuery($query, $params);
+    }
 }

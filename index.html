@@ -15,11 +15,24 @@
                 <strong>My restQuest</strong>
             </a>
         </div>
-    </nav>    
+    
+        <!-- Navbar items (hidden initially) for displaying the role and username -->
+        <div class="navbar-item" id="user-info" style="display: none;">
+            <span id="user-role"></span> | <span id="user-username"></span>
+            <!-- Logout button (hidden by default) -->
+            <button 
+            id="logout-btn" 
+            class="button is-small is-primary is-inverted is-outlined"
+            onclick="logout()" 
+            style="margin-left: 1rem; display: none;">
+            Logout
+        </button>
+        </div>
+    </nav>
 
     <!-- Main content -->
     <div class="container">
-        <h1 class="title" id="page-title">Login</h1>
+        
 
         <!-- Login Form -->
         <div id="login-form">
@@ -47,7 +60,7 @@
 
         <!-- User List (Initially hidden) -->
         <div id="users-list" class="is-hidden">
-
+            <h2 class="subtitle">Employer List</h2>
              <!-- Create User Button -->
             <div class="field">
                 <div class="control">
@@ -141,6 +154,13 @@
             </div>
         </div>
 
+        <!-- Requests List (Initially hidden) -->
+        <div id="requests-list" class="is-hidden">
+            <h2 class="subtitle">Pending Requests</h2>
+            <div id="pending-requests-container">
+                <!-- Pending requests will be populated here by JavaScript -->
+            </div>
+        </div>
 
     </div>
 
