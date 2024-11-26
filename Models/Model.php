@@ -58,10 +58,13 @@ abstract class Model
         return $this->executeQuery($query, $params);
     }
 
-    public function findByEmail($email)
+    public function delete($id)
     {
-        $query = "SELECT * FROM {$this->tableName} WHERE email = :email";
-        $params = [':email' => $email];
-        return $this->executeQuery($query, $params);
+        // Prepare and execute the DELETE statement
+        $stmt = $this->db->prepare("DELETE FROM {$this->tableName} WHERE id = :id");
+        $stmt->bindValue(':id', $id, PDO::PARAM_INT);
+        
+        // Execute and return if at least one row is affected
+        return $stmt->execute() && $stmt->rowCount() > 0;
     }
 }

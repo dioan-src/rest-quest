@@ -41,13 +41,13 @@ CREATE TABLE statuses (
 -- Create the requests table
 CREATE TABLE requests (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    employee_id INT NOT NULL,
+    user_id INT NOT NULL,
     status_id INT NOT NULL,
     start_date DATE NOT NULL,
     end_date DATE NOT NULL,
     reason TEXT NOT NULL,
     submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    FOREIGN KEY (employee_id) REFERENCES employees(employee_id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (status_id) REFERENCES statuses(id) ON DELETE RESTRICT
 );
 

@@ -1,8 +1,6 @@
 <?php
 require_once __DIR__ . '/../utils/Router.php';
 require_once __DIR__ . '/../utils/Response.php';
-require_once __DIR__ . '/../Models/User.php';
-require_once __DIR__ . '/../Controllers/Users.php';
 
 
 // Get the request path
@@ -14,7 +12,11 @@ $path = str_replace('/api/', '', parse_url($requestUri, PHP_URL_PATH));
 $segments = explode('/', $path);
 
 $controller = ucfirst($segments[0]) ?? null;
-$id = $segments[1] ?? null;
-$action = $segments[2] ?? null;
+$suffix1 = $segments[1] ?? null;
+$suffix2 = $segments[2] ?? null;
 
-Router::guide($requestMethod, $controller, $id);
+try {
+    Router::guide($requestMethod, $controller, $suffix1, $suffix2);
+} catch (Exception $e) {
+    Response::sendInternalServerError();
+}
