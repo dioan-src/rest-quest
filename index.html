@@ -15,16 +15,128 @@
                 <strong>My restQuest</strong>
             </a>
         </div>
-    </nav>
+    </nav>    
 
     <!-- Main content -->
     <div class="container">
-        <h1 class="title">Users List</h1>
+        <h1 class="title" id="page-title">Login</h1>
 
-        <!-- List of users (This will be populated by JavaScript) -->
-        <div id="items-list">
-            <!-- User divs will go here -->
+        <!-- Login Form -->
+        <div id="login-form">
+            <div class="field">
+                <label class="label">Username</label>
+                <div class="control">
+                    <input class="input" type="text" id="username" placeholder="Enter your username">
+                </div>
+            </div>
+
+            <div class="field">
+                <label class="label">Password</label>
+                <div class="control">
+                    <input class="input" type="password" id="password" placeholder="Enter your password">
+                </div>
+            </div>
+
+            <div class="field">
+                <div class="control">
+                    <button class="button is-primary" onclick="login()">Login</button>
+                </div>
+            </div>
         </div>
+
+
+        <!-- User List (Initially hidden) -->
+        <div id="users-list" class="is-hidden">
+
+             <!-- Create User Button -->
+            <div class="field">
+                <div class="control">
+                    <button class="button is-success" onclick="showCreateUserForm()">Create User</button>
+                </div>
+            </div>
+
+            <!-- List of users (This will be populated by JavaScript) -->
+            <div id="items-list">
+                <!-- User divs will go here -->
+            </div>
+        </div>
+        
+        <!-- Create User Form Modal (Initially hidden) -->
+        <div id="create-user-form" class="modal">
+            <div class="modal-background" onclick="closeCreateUserForm()"></div>
+            <div class="modal-content">
+                <div class="box">
+                    <h3 class="title">Create New User</h3>
+                    <form id="create-user-form-content" onsubmit="submitCreateUserForm(event)">
+                        <div class="field">
+                            <label class="label">Username</label>
+                            <div class="control">
+                                <input class="input" type="text" id="new-username" placeholder="Enter username" required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Email</label>
+                            <div class="control">
+                                <input class="input" type="email" id="new-email" placeholder="Enter email" required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label class="label">Password</label>
+                            <div class="control">
+                                <input class="input" type="password" id="new-password" placeholder="Enter password" required>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <div class="control">
+                                <button class="button is-primary" type="submit">Create User</button>
+                                <button type="button" class="button is-light" onclick="closeCreateUserForm()">Cancel</button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit User Form (Initially hidden) -->
+        <div id="edit-user-form" class="is-hidden">
+            <h2 class="subtitle">Edit User</h2>
+            <input type="hidden" id="edit-user-id">
+            
+            <div class="field">
+                <label class="label">Username</label>
+                <div class="control">
+                    <!-- Removed readonly to allow editing -->
+                    <input class="input" type="text" id="edit-username" placeholder="Username">
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label">Email</label>
+                <div class="control">
+                    <!-- Removed readonly to allow editing -->
+                    <input class="input" type="email" id="edit-email" placeholder="Email">
+                </div>
+            </div>
+            
+            <div class="field">
+                <label class="label">Password</label>
+                <div class="control">
+                    <input class="input" type="password" id="edit-password" placeholder="New password (leave empty to keep current)">
+                </div>
+            </div>
+            
+            <div class="field">
+                <div class="control">
+                    <button class="button is-primary" onclick="updateUser()">Update</button>
+                    <button class="button is-light" onclick="cancelEdit()">Cancel</button>
+                </div>
+            </div>
+        </div>
+
+
     </div>
 
     <!-- Link to external JavaScript file -->

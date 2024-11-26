@@ -16,6 +16,12 @@ class Users
         $users = (new User())->findAll();
         Response::sendSuccess((array) $users, "");
     }
+
+    public static function showSingle(int $id)
+    {
+        $user = (new User())->find($id);
+        Response::sendSuccess((array) $user, "");
+    }
     
     public static function store(array $data)
     {
@@ -64,7 +70,7 @@ class Users
         $data = array_merge($data, ['role_id' => self::EMPLOYEE_ROLE]);
         $user_id = (new User())->create($data);
         
-        Response::sendResponse([], "Manager created successfully", true, 200);
+        Response::sendResponse([], "Employer created successfully", true, 200);
     }
 
     public static function showUserRequests(int $id)

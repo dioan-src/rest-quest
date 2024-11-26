@@ -10,6 +10,7 @@ class Router {
             'POST|employees' => 'storeEmployees',
             'POST|login' => 'login',
             'POST|logout' => 'logout',
+            'GET|{id}' => 'showSingle',
             'GET' => 'show',
             'GET|managers' => 'showManagers',
             'GET|employees' => 'showEmployees',
@@ -51,6 +52,7 @@ class Router {
         }
         
         $functionName = self::getControllerFunction($controller, $requestMethod, $suffix1, $suffix2);
+        if (empty($functionName)) Response::sendBadRequest([], 'Wrongly Formed Request');
         if (!method_exists($controllerClass, $functionName)) {
             Response::sendBadRequest([], 'Wrongly Formed Request');
         }
