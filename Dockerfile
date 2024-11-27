@@ -28,9 +28,6 @@ RUN a2ensite rest-quest.conf && \
 # Copy application files
 COPY . /var/www/html/rest-quest
 
-# Copy .env.example to .env
-RUN cp /var/www/html/rest-quest/.env.example /var/www/html/rest-quest/.env
-
 # Set the working directory
 WORKDIR /var/www/html/rest-quest
 
