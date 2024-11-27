@@ -2,9 +2,17 @@ document.addEventListener('DOMContentLoaded', function () {
     // Check if user is already logged in by checking localStorage for the login token
     if (localStorage.getItem('login_token')) {
         // If logged in, show the users list and update the navbar with the user role
-        showUserList();
-        showRequestsList();
-        updateNavbar();
+        const role = localStorage.getItem('user_role'); // Get the role from localStorage
+        if (role === 'Manager') {
+            // If the user is a manager, show the users list and requests list
+            showUserList();
+            showRequestsList();
+            updateNavbar();
+        } else if (role === 'Employer') {
+            // user is employer, update navbar and hide login form
+            showMyRequests(); // Show the "My Requests" section for Employers
+            updateNavbar();
+        }
     } else {
         // If not logged in, show the login screen
         showLoginScreen();
@@ -13,10 +21,10 @@ document.addEventListener('DOMContentLoaded', function () {
 
 // Function to show the login screen
 function showLoginScreen() {
-    
     document.getElementById('login-form').classList.remove('is-hidden');
     document.getElementById('users-list').classList.add('is-hidden');
     document.getElementById('requests-list').classList.add('is-hidden');
+    document.getElementById('my-requests').classList.add('is-hidden');
 
     // Hide user info and logout button
     document.getElementById('user-info').style.display = 'none';
@@ -25,18 +33,20 @@ function showLoginScreen() {
 
 // Function to show the users list screen
 function showUserList() {
-    document.getElementById('login-form').classList.add('is-hidden');
-    document.getElementById('users-list').classList.remove('is-hidden');
-
     const role = localStorage.getItem('user_role');
-    const username = localStorage.getItem('username');
+    if (role === 'Manager') {
+        document.getElementById('login-form').classList.add('is-hidden');
+        document.getElementById('users-list').classList.remove('is-hidden');
+        fetchData();
+    } else {
+        document.getElementById('users-list').classList.add('is-hidden');
+    }
 
+    const username = localStorage.getItem('username');
     document.getElementById('user-info').style.display = 'flex';
     document.getElementById('user-role').innerText = role ? role : 'Unknown Role';
     document.getElementById('user-username').innerText = username ? username : 'Unknown User';
     document.getElementById('logout-btn').style.display = 'inline-block';
-
-    fetchData();
 }
 
 function login() {
@@ -66,6 +76,7 @@ function login() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
+            console.log(data);
             // On successful login, save login token and role to localStorage and show the users list
             localStorage.setItem('login_token', data.content.login_token);
             localStorage.setItem('user_role', data.content.role); // Save the role (Manager or Employer)
@@ -74,7 +85,8 @@ function login() {
             
             showUserList();
             showRequestsList();
-            updateNavbar();;
+            showMyRequests();
+            updateNavbar();
         } else {
             alert('Login failed: ' + data.message);
         }
@@ -388,12 +400,15 @@ function fetchPendingRequests() {
 }
 
 function showRequestsList() {
-    // Ensure the requests list is visible
-    const requestsListElement = document.getElementById('requests-list');
-    requestsListElement.classList.remove('is-hidden');
-
-    // Fetch and display pending requests
-    fetchPendingRequests();
+    const role = localStorage.getItem('user_role');
+    if (role === 'Manager') {
+        // Only show the requests list if the role is "Manager"
+        const requestsListElement = document.getElementById('requests-list');
+        requestsListElement.classList.remove('is-hidden');
+        fetchPendingRequests();
+    } else {
+        document.getElementById('requests-list').classList.add('is-hidden');
+    }
 }
 
 function approveRequest(requestId) {
@@ -462,4 +477,158 @@ function rejectRequest(requestId) {
         console.error('Error rejecting request:', error);
         alert('Error rejecting request. Please try again later.');
     });
+}
+
+function showMyRequests() {
+    const role = localStorage.getItem('user_role'); // Retrieve user role from localStorage
+    
+    if (role === 'Employer') {
+        // Only show the "My Requests" section if the role is "Employer"
+        document.getElementById('my-requests').classList.remove('is-hidden');
+        document.getElementById('login-form').classList.add('is-hidden');
+        fetchMyRequests(); // Fetch the "My Requests" for the logged-in employer
+    } else {
+        document.getElementById('my-requests').classList.add('is-hidden'); // Hide "My Requests" section if not an Employer
+    }
+}
+
+function fetchMyRequests() {
+    const userId = localStorage.getItem('user_id'); // Retrieve the user_id from localStorage
+
+    // Send request to get the user's requests
+    fetch(`http://localhost:8020/api/users/${userId}/requests`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const container = document.getElementById('my-requests-container');
+                // Clear any existing content
+                container.innerHTML = '';
+
+                if (data.content.length === 0) {
+                    container.innerHTML = '<p>No pending requests found.</p>';
+                    return;
+                }
+
+                // Iterate over the requests and display them
+                data.content.forEach(request => {
+                    const requestElement = document.createElement('div');
+                    requestElement.classList.add('request-card');
+                    requestElement.innerHTML = `
+                        <p><strong>Status:</strong> ${getStatusLabel(request.status_id)}</p>
+                        <p><strong>Start Date:</strong> ${request.start_date}</p>
+                        <p><strong>End Date:</strong> ${request.end_date}</p>
+                        <p><strong>Reason:</strong> ${request.reason}</p>
+                        <p><strong>Submitted At:</strong> ${request.submitted_at}</p>
+                    `;
+                    
+                    if (request.status_id == '1') {
+                        const deleteButton = document.createElement('button');
+                        deleteButton.classList.add('button', 'is-danger', 'is-small');
+                        deleteButton.innerText = 'Delete';
+                        deleteButton.onclick = () => deleteRequest(request.id);
+
+                        // Append the delete button to the request element
+                        requestElement.appendChild(deleteButton);
+                    }
+
+                    // Append the request element to the container
+                    container.appendChild(requestElement);
+                });
+            } else {
+                // If no requests, show a message
+                listContainer.innerHTML = '<p>No requests found.</p>';
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching requests:', error);
+        });
+}
+
+function showCreateRequestForm() {
+    const createRequestForm = document.getElementById('create-request-form');
+    createRequestForm.classList.add('is-active'); // Show the modal
+}
+
+function closeCreateRequestForm() {
+    const createRequestForm = document.getElementById('create-request-form');
+    createRequestForm.classList.remove('is-active'); // Hide the modal
+}
+
+function submitCreateRequestForm(event) {
+    event.preventDefault(); // Prevent form submission
+
+    const userId = localStorage.getItem('user_id'); // Get the user ID from localStorage
+    const startDate = document.getElementById('request-start-date').value;
+    const endDate = document.getElementById('request-end-date').value;
+    const reason = document.getElementById('request-reason').value;
+
+    const requestData = {
+        user_id: userId,
+        start_date: startDate,
+        end_date: endDate,
+        reason: reason
+    };
+
+
+    // Make the POST request to create the new request
+    fetch('http://localhost:8020/api/requests/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(requestData)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Request created successfully');
+            closeCreateRequestForm(); // Close the modal
+            // Optionally, reload or update the requests list
+            fetchMyRequests(); // Refresh the list of requests
+        } else {
+            alert('Failed to create request: ' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error creating request:', error);
+        alert('An error occurred while creating the request.');
+    });
+}
+
+function getStatusLabel(statusId) {
+    switch (statusId) {
+        case 1:
+            return 'Pending';
+        case 2:
+            return 'Approved';
+        case 3:
+            return 'Rejected';
+        default:
+            return 'Unknown';
+    }
+}
+
+function deleteRequest(requestId) {
+    if (confirm("Are you sure you want to delete this request?")) {
+        fetch(`http://localhost:8020/api/requests/${requestId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Request deleted successfully');
+                // Refresh the list of requests after deletion
+                fetchMyRequests();
+            } else {
+                alert('Failed to delete the request: ' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error deleting request:', error);
+            alert('An error occurred while deleting the request.');
+        });
+    }
 }
