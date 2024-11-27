@@ -77,4 +77,6 @@ INSERT INTO statuses (status_name) VALUES ('Pending'), ('Approved'), ('Rejected'
 
 -- insert the first user(manager)
 INSERT INTO users (username, email, password, role_id)
-VALUES ('manageruser', 'manager@example.com', 'hashedpasswordhere', 1);
+VALUES ('manageruser', 'manager@example.com', '01b613da484bee91c3f3806b52a6f40fd61ade874b5ffc0f62a2091cce38158b', 1),
+    ('emp1', 'emp@ena', '01b613da484bee91c3f3806b52a6f40fd61ade874b5ffc0f62a2091cce38158b', 2),
+    ('emp2', 'emp@dyo', '01b613da484bee91c3f3806b52a6f40fd61ade874b5ffc0f62a2091cce38158b', 2);

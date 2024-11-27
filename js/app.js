@@ -49,7 +49,7 @@ function showUserList() {
     document.getElementById('logout-btn').style.display = 'inline-block';
 }
 
-function login() {
+async function login() {
     const username = document.getElementById('username').value;
     const password = document.getElementById('password').value;
 
@@ -60,8 +60,8 @@ function login() {
     }
 
     // Hash the password here if necessary
-    // const hashedPassword = hashPassword(password); // Add your password hashing logic here
-
+    const hashedPassword = await hashPassword(password);
+    
     // Send the login request to the backend
     fetch('http://localhost:8020/api/users/login', {
         method: 'POST',
@@ -70,7 +70,7 @@ function login() {
         },
         body: JSON.stringify({
             username: username,
-            password: password
+            password: hashedPassword
         }),
     })
     .then(response => response.json())
@@ -172,7 +172,7 @@ function closeCreateUserForm() {
 }
 
 // Function to submit the "Create User" form
-function submitCreateUserForm(event) {
+async function submitCreateUserForm(event) {
     event.preventDefault(); // Prevent the default form submission
 
     // Get form values
@@ -186,6 +186,8 @@ function submitCreateUserForm(event) {
         return;
     }
 
+    const hashedpassword = await hashPassword(password);
+
     // Send POST request to create a new user
     fetch('http://localhost:8020/api/users/employees', {
         method: 'POST',
@@ -196,7 +198,7 @@ function submitCreateUserForm(event) {
         body: JSON.stringify({
             username: username,
             email: email,
-            password: password
+            password: hashedpassword
         })
     })
     .then(response => response.json())
@@ -242,7 +244,7 @@ function editUser(userId) {
 }
 
 
-function updateUser(event) {
+async function updateUser(event) {
     event.preventDefault(); // Prevent form submission
 
     const userId = document.getElementById('edit-user-id').value;
@@ -254,7 +256,7 @@ function updateUser(event) {
     const updatedUser = { username, email };
 
     if (password) {
-        updatedUser.password = password;
+        updatedUser.password = await hashPassword(password);
     }
 
     fetch(`http://localhost:8020/api/users/${userId}`, {
@@ -632,3 +634,15 @@ function deleteRequest(requestId) {
         });
     }
 }
+
+
+async function hashPassword(password) {
+    const encoder = new TextEncoder(); // Encodes the string as bytes
+    const data = encoder.encode(password); // Convert password to bytes
+  
+    const hashBuffer = await crypto.subtle.digest('SHA-256', data); // Hash the password using SHA-256
+    const hashArray = Array.from(new Uint8Array(hashBuffer)); // Convert buffer to array of bytes
+    const hashHex = hashArray.map(byte => byte.toString(16).padStart(2, '0')).join(''); // Convert bytes to hex string
+  
+    return hashHex; // Return the hash as a hex string
+  }

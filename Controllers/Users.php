@@ -25,6 +25,7 @@ class Users
     
     public static function store(array $data)
     {
+        $data['password'] = hash('sha256', $data['password']);
         $user_id = (new User())->create($data);
         
         Response::sendResponse([], "User created successfully", true, 200);
@@ -32,6 +33,7 @@ class Users
 
     public static function edit(int $id, array $data)
     {
+        if (!empty($data['password'])) $data['password'] = hash('sha256', $data['password']);
         (new User())->update($id, $data);
         
         Response::sendResponse([], "User edited successfully", true, 200);
@@ -57,6 +59,7 @@ class Users
 
     public static function storeManagers(array $data)
     {
+        $data['password'] = hash('sha256', $data['password']);
         //add manager role before user creation
         $data = array_merge($data, ['role_id' => self::MANAGER_ROLE]);
         $user_id = (new User())->create($data);
@@ -66,6 +69,7 @@ class Users
 
     public static function storeEmployees(array $data)
     {
+        $data['password'] = hash('sha256', $data['password']);
         //add employer role before user creation
         $data = array_merge($data, ['role_id' => self::EMPLOYEE_ROLE]);
         $user_id = (new User())->create($data);
@@ -86,7 +90,7 @@ class Users
     public static function login(array $data)
     {
         $username = $data['username'];
-        $password = $data['password'];
+        $password = hash('sha256', $data['password']);
 
         $userToLogin = (new User())->findByUsername($username);
 
